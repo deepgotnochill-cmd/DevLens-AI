@@ -1,0 +1,365 @@
+{
+  "full_name": "react/react",
+  "description": "The library for web and native user interfaces.",
+  "stars": 252930,
+  "forks": 51808,
+  "open_items": 1590,
+  "watchers": 6628,
+  "default_branch": "main",
+  "license": "MIT",
+  "archived": false,
+  "pushed_at": "2026-11-21T23:16:08Z",
+  "analyzed_at": "2026-11-22T21:15:04.345Z",
+  "languages": {
+    "JavaScript": 5635612,
+    "Rust": 3026505,
+    "TypeScript": 2609748,
+    "HTML": 116611,
+    "CSS": 95930,
+    "CoffeeScript": 18688,
+    "Shell": 15779
+  },
+  "commits": [
+    {
+      "sha": "33e52451f2ab39e0a4d186256b2b4d55277e6041",
+      "date": "2026-11-21T23:07:56Z",
+      "message": "[Ledgers] Implement captureLedgers on the server (#37591)"
+    },
+    {
+      "sha": "043ce5953cb1849280fc18edb8c20066896e4d83",
+      "date": "2026-11-20T22:53:48Z",
+      "message": "[Ledgers] Write Ledger entries to the response stream (#37590)"
+    },
+    {
+      "sha": "e1a76b49105d67da3b7ba82e1b4d82637c7715f9",
+      "date": "2026-11-20T22:53:47Z",
+      "message": "[Flight] Write the faulty chunk in its own flush in the interrupted-write test (#38326)"
+    },
+    {
+      "sha": "7b22099e3cfde41ea2fa27ebfbfc34623b4d1a4b",
+      "date": "2026-11-20T16:42:31Z",
+      "message": "[flags] try removing legacy mode in rn-fb again (#37736)"
+    },
+    {
+      "sha": "e04279e76e2703ceb0d99c3599f0b74f01770dd4",
+      "date": "2026-11-19T11:07:22Z",
+      "message": "[Flight] Fix missing key warning for an outlined static child that holds a lazy node (#38319)"
+    },
+    {
+      "sha": "63d9c806be677e9c2394696ca4a91f52e01eec6d",
+      "date": "2026-11-18T19:00:37Z",
+      "message": "[Ledgers] Add the row ID to the dedupe map (#37589)"
+    },
+    {
+      "sha": "452c22cae121f087fe3b428d9b841bdab0d8f9bd",
+      "date": "2026-11-18T19:00:37Z",
+      "message": "[Ledgers] Scaffold Flight Ledgers behind a flag (#37588)"
+    },
+    {
+      "sha": "6ff257439b3919fc8dcc643b635e09d62fa74d0e",
+      "date": "2026-11-17T17:25:22Z",
+      "message": "[DevTools] Expose Suspense suspended state in facade inspection results (#38227)"
+    },
+    {
+      "sha": "a8342585c75bebaaca5d73e3724f4744e940ec09",
+      "date": "2026-11-17T12:56:07Z",
+      "message": "[React Compiler] fix: don't outline 'use no memo' functions and don't recurse into them (#38278)"
+    },
+    {
+      "sha": "1cd5eb8e0edb0b3a1ba33de9c886d91627f8b5ac",
+      "date": "2026-11-17T01:15:24Z",
+      "message": "Fix useDeferredValue regressions from #38266 (#38270)"
+    },
+    {
+      "sha": "976e87ce22e417ae87395d4d0a5488eba3b07b02",
+      "date": "2026-11-16T20:28:12Z",
+      "message": "Fix uDV: Re-render while in \"initial\" state (#38266)"
+    },
+    {
+      "sha": "e358bedd839c99034ffef454030523bd73d225fd",
+      "date": "2026-11-16T20:26:05Z",
+      "message": "Fix useDeferredValue lost ping when the deferred render suspends (#38265)"
+    },
+    {
+      "sha": "6c6f84fff59a9a3d4b433517409af151d2551b39",
+      "date": "2026-11-16T18:49:10Z",
+      "message": "[Flight] Tag Server Component performance measures with React metadata (#38135)"
+    },
+    {
+      "sha": "01c059f4c983000021c8b152ac040ea6b5989834",
+      "date": "2026-11-16T18:47:53Z",
+      "message": "Upgrade @playwright/test to 1.65.1 across the repo (#38263)"
+    },
+    {
+      "sha": "df6aa4ec76cff5b3adde531c6fe8c36099e0469b",
+      "date": "2026-11-12T15:46:50Z",
+      "message": "[Flight] Ignore missing owner and stack data after EOF (#38233)"
+    },
+    {
+      "sha": "176df75ab93ca28b03d54ce99cfede8b257f6ce4",
+      "date": "2026-11-12T13:18:32Z",
+      "message": "[DevTools] Upgrade react-devtools-cdt-mcp e2e fixture dependencies (#38224)"
+    },
+    {
+      "sha": "aa28e6d15ab08e9838b3921ce2fc97a690c2047a",
+      "date": "2026-11-12T13:18:32Z",
+      "message": "[DevTools] Upgrade release script dependencies in scripts/devtools (#38223)"
+    },
+    {
+      "sha": "a4168abb87a11be2c961c18464e1b4d1a2b4d081",
+      "date": "2026-11-12T13:18:31Z",
+      "message": "[DevTools] Refresh vulnerable transitive dependencies in yarn.lock (#38222)"
+    },
+    {
+      "sha": "2e905a1150740791194755018ab8c08ed48c689a",
+      "date": "2026-11-12T13:18:31Z",
+      "message": "[DevTools] Override node-fetch for the legacy isomorphic-fetch dependency (#38221)"
+    },
+    {
+      "sha": "edb6e0794caddd798092340f6e971dbe3df35022",
+      "date": "2026-11-12T13:18:30Z",
+      "message": "[DevTools] Upgrade @babel/runtime and local-storage-fallback in react-devtools-shared (#38220)"
+    },
+    {
+      "sha": "542580590877db2835238f1d396b64db7f643103",
+      "date": "2026-11-12T13:18:30Z",
+      "message": "[DevTools] Upgrade immutable and semver in react-devtools-shell (#38219)"
+    },
+    {
+      "sha": "5a2eed8c6fd7cfba76e0c38d5e0f96255d1bea36",
+      "date": "2026-11-12T13:18:30Z",
+      "message": "[DevTools] Upgrade Playwright in react-devtools-inline (#38218)"
+    },
+    {
+      "sha": "4ae5273f1cf01f0d9f9a2fe960a4d362eff97d09",
+      "date": "2026-11-12T13:18:29Z",
+      "message": "[DevTools] Upgrade rimraf to 6 in react-devtools-extensions (#38217)"
+    },
+    {
+      "sha": "746bd05125be31bfc75b515739a25eae4b6563d4",
+      "date": "2026-11-12T13:18:29Z",
+      "message": "[DevTools] Upgrade cross-env to 7 in core, inline and shell (#38216)"
+    },
+    {
+      "sha": "06cb1450bda82897d35c8add38fef3d433b87f62",
+      "date": "2026-11-12T13:18:28Z",
+      "message": "[DevTools] Upgrade webpack to 5.111 (#38215)"
+    },
+    {
+      "sha": "fd8af8fe696f1bddcd1aa647308438ec708cef7f",
+      "date": "2026-11-12T13:18:27Z",
+      "message": "[DevTools] Remove node-libs-browser and declare the util polyfill directly (#38214)"
+    },
+    {
+      "sha": "ae719c2a70127cc2df549ae4fd15923588cfdafd",
+      "date": "2026-11-12T13:18:27Z",
+      "message": "[DevTools] Remove the improve-images script from react-devtools-extensions (#38213)"
+    },
+    {
+      "sha": "3a23a6b7b5b389103d36cf10e689f42680fec98f",
+      "date": "2026-11-12T13:18:27Z",
+      "message": "[DevTools] Replace child-process-promise with util.promisify in react-devtools-extensions (#38212)"
+    },
+    {
+      "sha": "3b81e615da3019d76c77e858306f4088b1455f89",
+      "date": "2026-11-12T13:18:26Z",
+      "message": "[DevTools] Upgrade firefox-profile to 4 in react-devtools-extensions (#38211)"
+    },
+    {
+      "sha": "3b75c86b7762b2694bf18308a751d4d64e076dbf",
+      "date": "2026-11-12T13:18:26Z",
+      "message": "[DevTools] Upgrade web-ext to 10 (#38210)"
+    }
+  ],
+  "files": [
+    {
+      "path": ".claude",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": ".codesandbox",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": ".editorconfig",
+      "type": "blob",
+      "size": 229
+    },
+    {
+      "path": ".eslintignore",
+      "type": "blob",
+      "size": 889
+    },
+    {
+      "path": ".eslintrc.js",
+      "type": "blob",
+      "size": 20934
+    },
+    {
+      "path": ".git-blame-ignore-revs",
+      "type": "blob",
+      "size": 82
+    },
+    {
+      "path": ".gitattributes",
+      "type": "blob",
+      "size": 12
+    },
+    {
+      "path": ".github",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": ".gitignore",
+      "type": "blob",
+      "size": 1087
+    },
+    {
+      "path": ".mailmap",
+      "type": "blob",
+      "size": 7823
+    },
+    {
+      "path": ".nvmrc",
+      "type": "blob",
+      "size": 9
+    },
+    {
+      "path": ".prettierignore",
+      "type": "blob",
+      "size": 1723
+    },
+    {
+      "path": ".prettierrc.js",
+      "type": "blob",
+      "size": 1044
+    },
+    {
+      "path": ".watchmanconfig",
+      "type": "blob",
+      "size": 3
+    },
+    {
+      "path": "CHANGELOG.md",
+      "type": "blob",
+      "size": 293193
+    },
+    {
+      "path": "CLAUDE.md",
+      "type": "blob",
+      "size": 359
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "type": "blob",
+      "size": 3541
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "type": "blob",
+      "size": 208
+    },
+    {
+      "path": "LICENSE",
+      "type": "blob",
+      "size": 1088
+    },
+    {
+      "path": "MAINTAINERS",
+      "type": "blob",
+      "size": 227
+    },
+    {
+      "path": "README.md",
+      "type": "blob",
+      "size": 5296
+    },
+    {
+      "path": "ReactVersions.js",
+      "type": "blob",
+      "size": 1994
+    },
+    {
+      "path": "SECURITY.md",
+      "type": "blob",
+      "size": 400
+    },
+    {
+      "path": "babel.config-react-compiler.js",
+      "type": "blob",
+      "size": 702
+    },
+    {
+      "path": "babel.config-ts.js",
+      "type": "blob",
+      "size": 519
+    },
+    {
+      "path": "babel.config.js",
+      "type": "blob",
+      "size": 959
+    },
+    {
+      "path": "compiler",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": "fixtures",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": "flow-typed.config.json",
+      "type": "blob",
+      "size": 260
+    },
+    {
+      "path": "flow-typed",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": "package.json",
+      "type": "blob",
+      "size": 8647
+    },
+    {
+      "path": "packages",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": "react.code-workspace",
+      "type": "blob",
+      "size": 670
+    },
+    {
+      "path": "scripts",
+      "type": "tree",
+      "size": 0
+    },
+    {
+      "path": "yarn.lock",
+      "type": "blob",
+      "size": 713804
+    }
+  ],
+  "truncated": true,
+  "head": "33e52451f2ab39e0a4d186256b2b4d55277e6041",
+  "url": "https://github.com/react/react",
+  "notes": [
+    "Saved GitHub REST snapshot. Commit activity covers the 30 most recent commits returned for the default branch.",
+    "The file listing covers the repository root. Its Git tree hash matches the sampled head. Nested files were not indexed.",
+    "Language totals are repository-wide bytes reported by GitHub Linguist. Open items include issues and pull requests."
+  ],
+  "sources": {
+    "metadata": "https://api.github.com/repos/react/react",
+    "languages": "https://api.github.com/repos/react/react/languages",
+    "commits": "https://api.github.com/repos/react/react/commits?sha=33e52451f2ab39e0a4d186256b2b4d55277e6041",
+    "files": "https://api.github.com/repos/react/react/git/trees/a18b5a6229d0d3762e30b8d3d38abd48625822d7"
+  }
+}

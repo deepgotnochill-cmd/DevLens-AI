@@ -1,0 +1,7 @@
+{
+  "type":"module","name":"devlens-ai","version":"1.0.0","private":true,
+  "scripts":{"dev":"npm run assets && next dev","build":"npm run assets && next build","assets":"node scripts/assets.mjs","typecheck":"tsc --noEmit","test":"node --experimental-strip-types --test tests/*.test.mjs"},
+  "engines":{"node":">=22.14"},
+  "dependencies":{"next":"^16.0.0","react":"^19.2.0","react-dom":"^19.2.0"},
+  "devDependencies":{"typescript":"^5.8.2","tailwindcss":"^4.1.0","@tailwindcss/postcss":"^4.1.0","@types/node":"^22.13.0","@types/react":"^19.0.0","@types/react-dom":"^19.0.0"}
+}
