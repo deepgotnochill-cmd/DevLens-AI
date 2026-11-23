@@ -6,7 +6,7 @@ DevLens AI is a public GitHub repository analyzer by **Deep Datta Chaudhury**. E
 
 ## Open the demo
 
-[Launch DevLens AI](https://deepgotnochill-cmd.github.io/DevLens-AI/) to analyze a public repository in your browser. This edition uses anonymous GitHub REST requests and requires no API key. Code explanations run in the self-hosted edition.
+[Launch DevLens AI](https://deepgotnochill-cmd.github.io/DevLens-AI/) to analyze a public repository in your browser. This edition uses anonymous GitHub REST requests and requires no API key. Open Code explainer, select a source file, and ask a question without signing in. The public demo shares 20 AI review attempts per UTC day.
 
 Download the project and open **DevLens-AI.html** in a desktop browser. The bundled React report works offline. Enter a public GitHub URL for a fresh report, or choose the Flask or C++ practice shortcut. Press **/** to focus the search field. Hover or keyboard-focus a point in the activity chart to read its date and count.
 
@@ -116,7 +116,7 @@ FastAPI provides the full schemas at `/docs`. GitHub requests go only to the fix
 
 ## Private AI review on Render
 
-[Start the Render deployment](https://render.com/deploy?repo=https://github.com/deepgotnochill-cmd/DevLens-AI). The blueprint deploys the Python API and PostgreSQL with pgvector in Singapore. Enter your own OpenAI key in Render's secret field. The hosted workspace uses the username **deep** and the generated **REVIEW_PASSWORD** from your service environment. Open the web service's HTTPS URL and sign in to analyze your repository and ask questions under Code explainer. Only the health check is public.
+[Start the Render deployment](https://render.com/deploy?repo=https://github.com/deepgotnochill-cmd/DevLens-AI). The blueprint deploys the Python API and PostgreSQL with pgvector in Singapore. Enter your own OpenAI key in Render's secret field. The hosted workspace uses the username **deep** and the generated **REVIEW_PASSWORD** from your service environment. Open the web service's HTTPS URL and sign in to analyze your repository and ask questions under Code explainer. The health check and POST /public/explain are public. The public route accepts the same JSON as /api/explain, and reserves a PostgreSQL quota slot before model calls. PUBLIC_AI_DAILY_LIMIT configures the shared daily attempt limit (default 20, zero pauses access). Failed provider calls count toward this limit.
 
 The free web service can sleep when idle and the free database expires after 30 days. Model calls use your provider account. Review plan details before enabling a paid service.
 

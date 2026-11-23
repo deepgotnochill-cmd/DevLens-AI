@@ -6,11 +6,14 @@ import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 from psycopg import AsyncConnection
 
-from api.main import app as api, lifespan as api_lifespan
+from api.rag import EXTENSIONS
+from api.analyzer import repository
+from api.main import Explanation, Question, app as api, explain_file, get_report, lifespan as api_lifespan
 
 ROOT = Path(__file__).resolve().parent
 @asynccontextmanager
@@ -20,6 +23,7 @@ async def lifespan(_):
     async with await AsyncConnection.connect(os.environ["DATABASE_URL"]) as connection:
         await connection.execute("SELECT pg_advisory_xact_lock(713940204)")
         await connection.execute((ROOT / "db/init.sql").read_text())
+        await connection.execute("CREATE TABLE IF NOT EXISTS public_review_usage (day date PRIMARY KEY, attempts integer NOT NULL)")
     async with api_lifespan(api):
         yield
 
@@ -29,7 +33,7 @@ app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None
 
 @app.middleware("http")
 async def authenticate(request: Request, call_next):
-    if request.url.path != "/health":
+    if request.url.path not in {"/health", "/public/explain"}:
         scheme, _, token = request.headers.get("authorization", "").partition(" ")
         try:
             supplied = base64.b64decode(token, validate=True) if scheme.lower() == "basic" else b""
@@ -53,3 +57,39 @@ def dashboard():
 
 
 app.mount("/api", api)
+
+
+public = FastAPI(docs_url=None, redoc_url=None, openapi_url=None,
+                 exception_handlers=api.exception_handlers.copy())
+public.add_middleware(CORSMiddleware, allow_origins=["https://deepgotnochill-cmd.github.io"],
+                      allow_methods=["POST"], allow_headers=["Content-Type"])
+
+
+@public.post("/explain", response_model=Explanation)
+async def public_explanation(query: Question, request: Request):
+    try:
+        repository(query.url)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    report = await get_report(query.url)
+    if query.revision != report.head:
+        raise HTTPException(409, "The branch changed. Analyze the repository again.")
+    if not any(f.path == query.path and f.type == "blob" and 0 < f.size <= 60000
+               and f.path.lower().endswith(EXTENSIONS) for f in report.files):
+        raise HTTPException(422, "Select a supported source file under 60 KB.")
+    limit = int(os.getenv("PUBLIC_AI_DAILY_LIMIT", "20"))
+    if limit <= 0:
+        raise HTTPException(429, "Public AI reviews are paused.")
+    async with api.state.pool.connection() as conn:
+        result = await conn.execute("""
+            INSERT INTO public_review_usage AS usage (day, attempts)
+            VALUES ((now() AT TIME ZONE 'UTC')::date, 1)
+            ON CONFLICT (day) DO UPDATE SET attempts = usage.attempts + 1
+            WHERE usage.attempts < %s RETURNING attempts
+        """, (limit,))
+        if await result.fetchone() is None:
+            raise HTTPException(429, "The shared daily AI limit has been reached. Try after midnight UTC.")
+    return await explain_file(query, request)
+
+
+app.mount("/public", public)
