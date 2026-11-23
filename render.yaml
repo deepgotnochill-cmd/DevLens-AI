@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: devlens-review
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn hosted:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: devlens-vectors
+          property: connectionString
+      - key: REVIEW_PASSWORD
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+databases:
+  - name: devlens-vectors
+    region: singapore
+    plan: free
+    postgresMajorVersion: "17"
+    ipAllowList: []
