@@ -16,6 +16,12 @@ Place the contents of this folder at your repository root. In **Settings → Pag
 
 Use **public/social-preview.png** as the GitHub social preview or upload it as media for the LinkedIn project.
 
+## Explore a project before reviewing it
+
+Open **File explorer** to drill into the project map. Folder bars show indexed descendant file counts for up to twelve immediate folders per level. A partial-tree notice identifies incomplete coverage. **Tooling evidence** links recognized configuration filenames to their exact Git revision. These checks identify configuration files rather than inferring runtime dependencies or versions.
+
+From **Recommendations**, expand the review prompt and choose **Download review as Markdown**. The export includes revision, sample size, observed maintenance signals, and links to tooling evidence. Visual repository navigation was inspired by [RepoMind](https://github.com/403errors/repomind).
+
 ## Run the full stack
 
 Install Docker with Compose. From this directory, copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` to a random URL-safe password. Add `OPENAI_API_KEY` to enable explanations. A read-only `GITHUB_TOKEN` increases the GitHub request quota. Use a token restricted to public repository data.
