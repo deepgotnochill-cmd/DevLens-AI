@@ -4,7 +4,7 @@ from unittest.mock import patch
 import httpx
 
 from api.analyzer import Upstream, analyze, repository
-from api.rag import chunks, explain
+from api.rag import chunks, explain, provider
 
 
 class RepositoryTests(unittest.TestCase):
@@ -57,3 +57,16 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
                 await analyze(client,"o/r")
             self.assertEqual(error.exception.status,429)
 
+
+    async def test_provider_errors_are_actionable_and_redacted(self):
+        cases = [(401, {}, "API key"), (403, {}, "permissions"),
+                 (429, {"code": "insufficient_quota"}, "API billing"),
+                 (429, {}, "limited"), (503, {}, "temporarily")]
+        for status, error, expected in cases:
+            with self.subTest(status=status, expected=expected), patch.dict("os.environ", OPENAI_API_KEY="test"):
+                response = httpx.Response(status, json={"error": {**error, "message": "private upstream data"}})
+                async with httpx.AsyncClient(transport=httpx.MockTransport(lambda req: response)) as client:
+                    with self.assertRaises(Upstream) as result:
+                        await provider(client, "embeddings", {})
+                self.assertIn(expected, result.exception.detail)
+                self.assertNotIn("private upstream data", result.exception.detail)

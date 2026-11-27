@@ -14,7 +14,23 @@ async def provider(client, endpoint, payload):
     response = await client.post("https://api.openai.com/v1/" + endpoint, json=payload,
                                  headers={"Authorization": "Bearer " + os.environ["OPENAI_API_KEY"]})
     if response.status_code != 200:
-        raise Upstream(503, "The AI provider is unavailable. Check the server credentials and quota.")
+        status = response.status_code
+        if status == 401:
+            raise Upstream(503, "OpenAI rejected the server API key. The site owner should check OPENAI_API_KEY in Render.")
+        if status in (403, 404):
+            raise Upstream(503, "The OpenAI project cannot access the requested model or endpoint. Check its model access and key permissions.")
+        if status == 429:
+            try:
+                body = response.json()
+            except ValueError:
+                body = None
+            error = body.get("error") if isinstance(body, dict) else None
+            if isinstance(error, dict) and error.get("code") == "insufficient_quota":
+                raise Upstream(503, "OpenAI reports insufficient API quota. The site owner should check API billing and project limits.")
+            raise Upstream(429, "OpenAI limited this request. Try again later.")
+        if status >= 500:
+            raise Upstream(503, "OpenAI is temporarily unavailable. Try again later.")
+        raise Upstream(502, f"OpenAI rejected the {endpoint} request (HTTP {status}).")
     return response.json()
 
 
