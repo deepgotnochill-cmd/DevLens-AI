@@ -6,6 +6,8 @@ DevLens AI is a public GitHub repository analyzer by **Deep Datta Chaudhury**. E
 
 ## Open the demo
 
+[Launch DevLens AI](https://deepgotnochill-cmd.github.io/DevLens-AI/) to analyze a public repository in your browser. This edition uses anonymous GitHub REST requests and requires no API key. Open Code explainer, select a source file, and ask a question without signing in. The public demo shares 20 AI review attempts per UTC day.
+
 Download the project and open **DevLens-AI.html** in a desktop browser. The bundled React report works offline. Enter a public GitHub URL for a fresh report, or choose the Flask or C++ practice shortcut. Press **/** to focus the search field. Hover or keyboard-focus a point in the activity chart to read its date and count.
 
 ### Publish the dashboard on GitHub Pages
@@ -13,6 +15,12 @@ Download the project and open **DevLens-AI.html** in a desktop browser. The bund
 Place the contents of this folder at your repository root. In **Settings → Pages**, choose **GitHub Actions**. From **Actions**, run **Publish dashboard**. The workflow tests and builds the static dashboard and publishes it only when manually started. Its repository-relative assets support project URLs such as `https://USERNAME.github.io/REPOSITORY/`. The public demo uses GitHub’s anonymous API. For AI answers, run the full stack below.
 
 Use **public/social-preview.png** as the GitHub social preview or upload it as media for the LinkedIn project.
+
+## Explore a project before reviewing it
+
+Open **File explorer** to drill into the project map. Folder bars show indexed descendant file counts for up to twelve immediate folders per level. A partial-tree notice identifies incomplete coverage. **Tooling evidence** links recognized configuration filenames to their exact Git revision. These checks identify configuration files rather than inferring runtime dependencies or versions.
+
+From **Recommendations**, expand the review prompt and choose **Download review as Markdown**. The export includes revision, sample size, observed maintenance signals, and links to tooling evidence. Visual repository navigation was inspired by [RepoMind](https://github.com/403errors/repomind).
 
 ## Run the full stack
 
@@ -86,13 +94,45 @@ For a dependency-free static build with Node 22.14+, run `node scripts/assets.mj
 
 ## API
 
+The Docker Compose gateway exposes the API at `http://localhost:3000/api`. Append the routes below to that base URL. For interactive documentation with Uvicorn running directly on port 8000, open `http://localhost:8000/docs`.
+
 | Method and route | Payload | Result |
 | --- | --- | --- |
 | GET /health | — | Service status |
 | POST /analyze | `{"url":"https://github.com/pallets/flask"}` | Typed repository report |
 | POST /explain | Repository URL, revision SHA, indexed path and question | Explanation and cited excerpts |
 
+Example analysis request:
+
+```sh
+curl -X POST http://localhost:3000/api/analyze -H "Content-Type: application/json" -d '{"url":"https://github.com/deepgotnochill-cmd/DevLens-AI"}'
+```
+
+For `POST /explain`, send `url`, `revision` (the full `head` from the analysis response), `path` (a returned source-file path), and `question`. A successful answer includes `sources` with the file path, line range, excerpt and GitHub link.
+
+Keep `OPENAI_API_KEY`, the optional `GITHUB_TOKEN`, and database credentials in the backend environment. The Pages build reads public GitHub data directly. Its network requests are visible in browser developer tools and carry no private token.
+
 FastAPI provides the full schemas at `/docs`. GitHub requests go only to the fixed REST host and reject redirects. Tokens remain on the server. For internet-facing AI deployments, place authentication, HTTPS and shared quotas at the ingress, set provider spending limits and schedule retention for older `code_chunks`. The bundled Compose configuration binds the web port to loopback.
+
+## Private AI review on Render
+
+[Start the Render deployment](https://render.com/deploy?repo=https://github.com/deepgotnochill-cmd/DevLens-AI). The blueprint deploys the Python API and PostgreSQL with pgvector in Singapore. Enter your own OpenAI key in Render's secret field. The hosted workspace uses the username **deep** and the generated **REVIEW_PASSWORD** from your service environment. Open the web service's HTTPS URL and sign in to analyze your repository and ask questions under Code explainer. The health check and POST /public/explain are public. The public route accepts the same JSON as /api/explain, and reserves a PostgreSQL quota slot before model calls. PUBLIC_AI_DAILY_LIMIT configures the shared daily attempt limit (default 20, zero pauses access). Failed provider calls count toward this limit.
+
+The free web service can sleep when idle and the free database expires after 30 days. Model calls use your provider account. Review plan details before enabling a paid service.
+
+### Ask what could be improved
+
+In the public dashboard, open **Recommendations → Prepare an AI review prompt** for a copyable prompt with revision-specific evidence. For a private model-generated answer, run this PowerShell example after the Render workspace is deployed. Replace the origin with the actual service URL. PowerShell prompts for the workspace password.
+
+```powershell
+$origin = 'https://YOUR-SERVICE.onrender.com'
+$credential = Get-Credential -UserName deep -Message 'DevLens review workspace'
+$headers = @{ Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('deep:' + $credential.GetNetworkCredential().Password)) }
+$url = 'https://github.com/deepgotnochill-cmd/DevLens-AI'
+$report = Invoke-RestMethod "$origin/api/analyze" -Method Post -Headers $headers -ContentType 'application/json' -Body (@{url=$url} | ConvertTo-Json)
+$body = @{url=$url; revision=$report.head; path='api/analyzer.py'; question='Suggest one improvement to maintainability supported by this file. Cite the exact lines, describe the impact, and give a regression test.'}
+Invoke-RestMethod "$origin/api/explain" -Method Post -Headers $headers -ContentType 'application/json' -Body ($body | ConvertTo-Json) | ConvertTo-Json -Depth 8
+```
 
 ## Author
 

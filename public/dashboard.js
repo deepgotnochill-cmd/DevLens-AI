@@ -3,6 +3,7 @@ import {safe as h,loadRepo,request,signals,buckets} from './model.js';
 
 const root=document.querySelector             ('#devlens') ;
 const api=(root.dataset.api||'').replace(/\/$/,'');
+const explainApi = location.origin === 'https://deepgotnochill-cmd.github.io' ? 'https://devlens-review.onrender.com/public' : api;
 const paths                      ={
  lens:'<path d="M12 2 22 8v8l-10 6-10-6V8z M2 8l10 6 10-6 M12 14v8"/>',
  overview:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -44,11 +45,11 @@ function artwork(){
     <linearGradient id="edge"><stop stop-color="#368383"/><stop offset=".5" stop-color="#143440"/><stop offset="1" stop-color="#84efdb"/></linearGradient>
     </defs><g fill="none" stroke="#67e6ca" opacity=".25"><ellipse cx="125" cy="183" rx="99" ry="31"/><path d="M125 10v195 M12 143l215 57 M15 200l212-63" stroke-dasharray="3 5"/></g><g class="lens-stack">${layers}</g></svg>`;
 }
-function hero(){return `<section class="hero"><div class="heroart">${artwork()}</div><div class="heroContent">
-  <div class="eyebrow"><span class="tinyline"></span>REPOSITORY INTELLIGENCE</div><h1>Inside the <span>repository.</span></h1>
-  <p>Trace the commits, explore the code, and see what keeps a project moving.</p>
+function hero(){return `<section class="hero launch"><div class="heroart">${artwork()}</div><div class="heroContent">
+  <div class="eyebrow"><span class="tinyline"></span>REPOSITORY INTELLIGENCE</div><h1>Explore the code.<br><span>Find your next fix.</span></h1>
+  <p>Paste a public GitHub URL to trace changes, inspect files, and plan improvements.</p>
   <form id="analyze"><label class="urlfield">${ic('github',19)}<input id="repo" type="text" aria-label="Public GitHub repository URL" placeholder="https://github.com/owner/repository" required maxlength="300" value="${h(query)}"></label><button class="primary" ${busy?'disabled':''}>${ic('scan',17)}${busy?'Analyzing…':'Analyze'}</button></form>
-  <div class="samples"><span>Try a repo</span>${['pallets/flask','deepgotnochill-cmd/cpp-practice'].map(n=>`<button data-sample="${n}" ${busy?'disabled':''}>${n}</button>`).join('')}</div></div></section>`}
+  <div class="samples"><span>Try a repo</span>${['pallets/flask','deepgotnochill-cmd/cpp-practice'].map(n=>`<button data-sample="${n}" ${busy?'disabled':''}>${n}</button>`).join('')}</div></div></section><nav class="journeys" aria-label="Explore this report"><button data-view="activity">${ic('activity')}<b>Trace activity</b><small>See when the code changed</small></button><button data-view="folder">${ic('folder')}<b>Explore files</b><small>Map folders and inspect tooling</small></button><button data-view="insight">${ic('insight')}<b>Plan improvements</b><small>Prepare a source-based review</small></button></nav>`}
 function head(){return report?`<div class="repohead"><div><div class="repoTitle"><span class="repoicon">${ic('github',21)}</span><h2>${h(report.full_name.split('/')[0])}<i> / </i><strong>${h(report.full_name.split('/')[1])}</strong></h2><span class="badge">Public</span></div><p>${h(report.description)}</p></div><div class="stamp"><span class="badge source">${ic('time',13)} ${featured?'Saved snapshot':'Analyzed'}</span><small>${date(report.analyzed_at)} UTC</small></div></div>`:''}
 function stats(r       ){return `<div class="stats">${[['star','Stars',r.stars,'gold'],['branch','Forks',r.forks,'purple'],['issue','Open items',r.open_items,'green'],['eye','Watchers',r.watchers,'blue']].map(([key,label,val,color])=>`<article class="stat"><div><span class="metricicon ${color}">${ic(String(key),17)}</span><span>${label}</span></div><b title="${Number(val).toLocaleString()}">${compact(Number(val))}</b></article>`).join('')}</div>`}
 function activity(r       ){
@@ -66,20 +67,71 @@ function languages(r       ){
 const srcLink=(r       ,path       ,type='blob')=>h(r.url+'/'+type+'/'+r.head+'/'+path.split('/').map(encodeURIComponent).join('/'));
 function commitList(r       ,limit       ){return `<section class="panel list"><div class="panelhead"><h3>${ic('branch')} Recent commits</h3>${limit===4?'<button data-view="activity" class="textbtn">View activity</button>':''}</div>${r.commits.slice(0,limit).map(c=>`<div class="row"><a class="hash" href="${h(r.url)}/commit/${h(c.sha)}" target="_blank" rel="noreferrer">${h(c.sha.slice(0,7))}</a><span>${h(c.message)}</span><small>${date(c.date)}</small></div>`).join('')||'<p>No commits in this repository.</p>'}</section>`}
 function evidence(r       ){return `<section class="panel"><h3>${ic('insight')} Maintenance signals</h3><p>Evidence from the inspected revision</p>${signals(r).map(s=>`<div class="signal"><span>${h(s.name)}</span><small class="${s.path?'found':''}">${s.path?'Detected':s.uncertain?'Partial tree':'No match'}</small></div>`).join('')}</section>`}
+function projectMap(r       ){
+ const prefix=dir?dir+'/':'';
+ const counts=new Map               ();
+ for(const f of r.files){
+   if(!f.path.startsWith(prefix))continue;
+   const relative=f.path.slice(prefix.length), split=relative.indexOf('/');
+   if(split<0 && f.type==='tree' && !counts.has(relative))counts.set(relative,0);
+   if(split<0 || f.type!=='blob')continue;
+   const child=relative.slice(0,split);
+   counts.set(child,(counts.get(child)||0)+1);
+ }
+ const folders=[...counts.entries()].sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0]));
+ const maximum=folders[0]?.[1]||1;
+ const parent=dir.split('/').slice(0,-1).join('/');
+ return `<section class="panel mapPanel"><div class="panelhead"><h3>${ic('folder')} Project map</h3>
+   ${dir?`<button class="textbtn" data-dir="${h(parent)}">Parent folder</button>`:''}</div>
+   <p>${h(dir||r.full_name)} · ${folders.length} immediate folders. Bars count indexed files beneath each folder.</p>
+   ${r.truncated?'<p class="mapNote">Partial tree. Counts cover only the paths returned by GitHub.</p>':''}
+   <div class="mapGrid">${folders.slice(0,12).map(([name,n])=>{
+     const path=prefix+name;
+     const inner=`<b>${ic('folder',15)} ${h(name)}</b><small>${n} indexed ${n===1?'file':'files'}</small><span class="mapTrack"><i style="width:${100*n/maximum}%"></i></span>`;
+     return n?`<button class="mapTile" data-dir="${h(path)}">${inner}</button>`:`<a class="mapTile" href="${srcLink(r,path,'tree')}" target="_blank" rel="noreferrer">${inner}</a>`;
+   }).join('')}</div>${!folders.length?'<p>No child folders in this listing.</p>':folders.length>12?'<p>Showing the 12 largest folders. All returned paths are searchable below.</p>':''}</section>`;
+}
+function tooling(r       ){
+ const rules                  =[
+   ['Next.js',/^next\.config\.(ts|mjs|js|cjs)$/i],['TypeScript',/^tsconfig(?:\..+)?\.json$/i],
+   ['Docker Compose',/^(?:docker-)?compose\.ya?ml$/i],['Docker',/^(?:Dockerfile(?:\..+)?|.+\.Dockerfile)$/i],
+   ['Node.js packages',/^package\.json$/i],['Python packaging',/^(?:pyproject\.toml|requirements\.txt|Pipfile)$/i],
+   ['Rust packages',/^Cargo\.toml$/],['Go modules',/^go\.mod$/],['Prisma',/^schema\.prisma$/i],
+   ['GitHub Actions',/^\.github\/workflows\/[^/]+\.ya?ml$/]
+ ];
+ const blobs=r.files.filter(f=>f.type==='blob').sort((a,b)=>a.path.length-b.path.length||a.path.localeCompare(b.path));
+ return rules.flatMap(([name,pattern])=>{
+   const hit=blobs.find(f=>pattern.test(f.path.split('/').pop() )||pattern.test(f.path));
+   return hit?[{name,path:hit.path}]:[];
+ });
+}
+function toolPanel(r       ){
+ const hits=tooling(r);
+ return `<section class="panel"><h3>${ic('terminal')} Tooling evidence</h3><p>Configuration files found in the indexed revision.</p>
+   ${hits.map(t=>`<div class="signal"><b>${h(t.name)}</b><a href="${srcLink(r,t.path)}" target="_blank" rel="noreferrer">${h(t.path)}</a></div>`).join('')||'<p>No recognized configuration files in the sample.</p>'}</section>`;
+}
 function explorer(r       ){
  const prefix=dir?dir+'/':'',needle=fileSearch.toLowerCase();
  const files=r.files.filter(f=>needle?f.path.toLowerCase().includes(needle):f.path.startsWith(prefix)&&!f.path.slice(prefix.length).includes('/')).sort((a,b)=>Number(b.type==='tree')-Number(a.type==='tree')||a.path.localeCompare(b.path));
  return `<section class="panel"><div class="panelhead"><h3>${ic('folder')} File explorer</h3><span class="badge">${h(r.default_branch)}</span></div><p>${r.truncated?'Partial file listing':'Indexed file tree'} · ${h(r.head.slice(0,7))}</p><input id="filter" placeholder="Filter paths…" aria-label="Filter file paths" value="${h(fileSearch)}"><div class="crumb"><button data-dir="">Repository root</button> / ${h(dir)}</div><div id="files">${files.slice(0,200).map(f=>`<div class="row">${ic(f.type==='tree'?'folder':'file',16)}${f.type==='tree' && r.files.some(e=>e.path.startsWith(f.path+'/'))?`<button class="plain" data-dir="${h(f.path)}">${h(f.path)}</button>`:`<a href="${srcLink(r,f.path,f.type==='tree'?'tree':'blob')}" target="_blank" rel="noreferrer">${h(f.path)}</a>`}</div>`).join('')||'<p>No matching paths.</p>'}${files.length>200?'<p>Showing the first 200 matches. Refine your filter.</p>':''}</div></section>`;
 }
 function docs(r       ){const files=r.files.filter(f=>f.type==='blob'&&/(^|\/)(readme|contributing|changelog|license)|^docs\//i.test(f.path));return `<section class="panel"><h3>${ic('book')} Documentation</h3><p>Documentation and guides found in the sampled tree.</p>${files.slice(0,160).map(f=>`<div class="row">${ic('file',16)}<a href="${srcLink(r,f.path)}" target="_blank" rel="noreferrer">${h(f.path)}</a></div>`).join('')||'<p>No matching documents in the sample.</p>'}</section>`}
-function recommendations(r       ){return `<section class="panel"><h3>${ic('insight')} Evidence-backed recommendations</h3><p>File-presence checks at revision ${h(r.head.slice(0,7))}. Open each source to review its contents.</p>${signals(r).map(s=>`<article class="rec"><b>${h(s.name)}</b><p>${s.path?`Detected in <a href="${srcLink(r,s.path)}" target="_blank" rel="noreferrer">${h(s.path)}</a>.`:s.uncertain?'Coverage is partial. Inspect the full tree before drawing a conclusion.':`No matching path in the indexed tree. ${h(s.action)}`}</p></article>`).join('')}<a href="${srcLink(r,'','tree')}" target="_blank" rel="noreferrer">Inspect revision on GitHub</a></section>`}
+function brief(r       ){
+  const observations=signals(r).map(s=>s.name+' — '+(s.path || (s.uncertain?'unknown in partial tree':'no matching path')));
+  return ['Review '+r.url+' at revision '+(r.head||'(empty repository)')+'.',
+    'Sample: '+r.commits.length+' commits and '+r.files.length+' paths. Tree coverage: '+(r.truncated?'partial':'complete returned tree')+'.',
+    ...observations,
+    'Inspect the source before proposing up to three improvements. For each, cite the exact file and lines, explain the impact, suggest a minimal edit and give a verification step. State what you could not verify.'
+  ].join('\n');
+}
+function recommendations(r       ){return `<section class="panel"><h3>${ic('insight')} Evidence-backed recommendations</h3><details class="brief"><summary>Prepare an AI review prompt</summary><button class="textbtn" data-export-review>Download review as Markdown</button><p>Copy this prompt into your AI tool with repository access.</p><textarea readonly aria-label="Repository review prompt">${h(brief(r))}</textarea></details><p>File-presence checks at revision ${h(r.head.slice(0,7))}. Open each source to review its contents.</p>${signals(r).map(s=>`<article class="rec"><b>${h(s.name)}</b><p>${s.path?`Detected in <a href="${srcLink(r,s.path)}" target="_blank" rel="noreferrer">${h(s.path)}</a>.`:s.uncertain?'Coverage is partial. Inspect the full tree before drawing a conclusion.':`No matching path in the indexed tree. ${h(s.action)}`}</p></article>`).join('')}<a href="${srcLink(r,'','tree')}" target="_blank" rel="noreferrer">Inspect revision on GitHub</a></section>`}
 function ai(r       ){const files=r.files.filter(f=>f.type==='blob'&&f.size>0&&f.size<=60000&&/\.(py|tsx?|jsx?|md|go|rs|cpp|c|h|css|java|rb|toml|ya?ml|json|sh|kt)$/i.test(f.path));
  if(!selected)selected=files[0]?.path||'';
- return `<section class="panel"><h3>${ic('spark')} Code explainer</h3><p>Ask about a file and trace the explanation to lines from its analyzed revision.</p><form id="explain"><label>Source file<select id="source">${files.map(f=>`<option ${f.path===selected?'selected':''}>${h(f.path)}</option>`).join('')}</select></label><label>Your question<textarea id="question" maxlength="1200" minlength="3" required placeholder="What does this file do?">${h(question)}</textarea></label><button class="primary" ${!api||!files.length||aiBusy?'disabled':''}>${ic('spark')} ${aiBusy?'Retrieving evidence…':'Explain code'}</button></form>${!api?'<div class="notice">AI explanations require the FastAPI service. Configure NEXT_PUBLIC_API_URL and the server’s AI credentials.</div>':''}<div aria-live="polite">${answer}</div></section>`}
+ return `<section class="panel"><h3>${ic('spark')} Code explainer</h3><p>Ask about a file and trace the explanation to lines from its analyzed revision.</p><form id="explain"><label>Source file<select id="source">${files.map(f=>`<option ${f.path===selected?'selected':''}>${h(f.path)}</option>`).join('')}</select></label><label>Your question<textarea id="question" maxlength="1200" minlength="3" required placeholder="What does this file do?">${h(question)}</textarea></label><button class="primary" ${!explainApi||!files.length||aiBusy?'disabled':''}>${ic('spark')} ${aiBusy?'Retrieving evidence…':'Explain code'}</button></form>${!explainApi?'<div class="notice">Line-cited AI reviews run in the private review workspace. Open Recommendations to prepare a review prompt for this repository.</div>':''}<div aria-live="polite">${answer}</div></section>`}
 function developer(){return `<section class="developer panel"><img src="./deep.jpg" alt="Deep Datta Chaudhury, developer of DevLens AI"><div><div class="eyebrow">MEET THE DEVELOPER</div><h1>Deep Datta Chaudhury</h1><p>I built DevLens AI for that first visit to an unfamiliar repository. I wanted to see where the work happens, follow a change back to its commit, and check a code explanation against the lines it describes.</p><div class="devskills"><span>TypeScript</span><span>Python</span><span>pgvector</span></div><a class="primary" href="https://github.com/deepgotnochill-cmd" target="_blank" rel="noreferrer">${ic('github')} GitHub profile</a></div></section>`}
 function render(){
  const r=report,title=nav.find(n=>n[0]===view) [1];
- const body=view==='person'?developer():!r?'':view==='overview'?`${head()}${stats(r)}<div class="charts">${activity(r)}${languages(r)}</div><div class="lower">${commitList(r,4)}${evidence(r)}</div>`:`${head()}${view==='activity'?activity(r)+commitList(r,100):view==='folder'?explorer(r):view==='book'?docs(r):view==='spark'?ai(r):recommendations(r)}`;
+ const body=view==='person'?developer():!r?'':view==='overview'?`${head()}${stats(r)}<div class="charts">${activity(r)}${languages(r)}</div><div class="lower">${commitList(r,4)}${evidence(r)}</div>`:`${head()}${view==='activity'?activity(r)+commitList(r,100):view==='folder'?projectMap(r)+toolPanel(r)+explorer(r):view==='book'?docs(r):view==='spark'?ai(r):recommendations(r)}`;
  root.innerHTML=`${sidebar()}<button class="scrim" aria-label="Close navigation" data-dismiss></button><div class="shell"><header><button id="toggle" aria-controls="side" aria-expanded="${document.body.classList.contains('menuopen')}" aria-label="Toggle navigation">${ic('menu')}</button><span class="breadcrumb">Workspace <i>/</i> <b>${h(title)}</b></span><button class="topbrand" data-search>${ic('scan',15)} Analyze repository <kbd>/</kbd></button></header><div class="content">${view==='overview'?hero():view==='person'?'':`<div class="eyebrow">REPOSITORY WORKSPACE</div><h1 class="pageh">${h(title)}</h1>`}${error?`<div class="notice" role="alert">${h(error)}</div>`:''}${body||(!error?'<div class="notice" role="status">Loading repository evidence…</div>':'')}${r&&view!=='person'?`<details class="scope"><summary>Analysis scope & sources</summary><p>${r.commits.length} sampled commits · ${r.files.length} indexed paths · ${r.truncated?'partial tree':'complete returned tree'}. Open items include issues and pull requests.</p>${(r.notes||[]).map(n=>`<p>${h(n)}</p>`).join('')}<a href="${h(r.url)}" target="_blank" rel="noreferrer">View repository on GitHub</a></details>`:''}<footer>DevLens AI <span>Made by <button data-view="person">Deep Datta Chaudhury</button></span></footer></div></div>`;
 }
 function closeMenu(){
@@ -118,6 +170,15 @@ document.addEventListener('keydown',event=>{
 });
 root.addEventListener('click',e=>{const t=(e.target           ).closest             ('button');if(!t)return;
  if(t.id==='toggle'){t.setAttribute('aria-expanded',String(document.body.classList.toggle('menuopen')));return}
+ if(t.hasAttribute('data-export-review') && report){
+   const evidence=tooling(report).map(f=>f.name+' — '+srcLink(report ,f.path).replaceAll('&amp;','&'));
+   const text='# Repository review: '+report.full_name+'\\n\\n'+brief(report)+'\\n\\n## Tooling evidence\\n\\n'+(evidence.join('\\n')||'No recognized tooling files in this sample.')+'\\n';
+   const url=URL.createObjectURL(new Blob([text],{type:'text/markdown;charset=utf-8'}));
+   const link=document.createElement('a');
+   link.href=url;link.download=report.full_name.replace('/','-')+'-review.md';
+   document.body.append(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);return;
+ }
  if(t.hasAttribute('data-dismiss')){closeMenu();return}
  if(t.hasAttribute('data-search')){focusSearch();return}
  if(t.dataset.sample){query='https://github.com/'+t.dataset.sample;const input=root.querySelector                  ('#repo') ;input.value=query;input.form?.requestSubmit();return}
@@ -131,7 +192,7 @@ let sequence=0;
 root.addEventListener('submit',async e=>{
  e.preventDefault();const id=(e.target                   ).id;
  if(id==='analyze'&&!busy){const seq=++sequence;busy=true;error='';render();try{const next=await loadRepo(query.trim(),api);if(seq===sequence){report=next;featured=false;dir='';fileSearch='';selected='';answer='';aiToken++;aiBusy=false}}catch(err){error=(err         ).message+(report?' The previous report is still displayed.':'')}finally{busy=false;render()}}
- if(id==='explain'&&report&&api&&!aiBusy){const token=++aiToken;aiBusy=true;answer='';render();try{const v=await request(api+'/explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:report.url,revision:report.head,path:selected,question})});if(token===aiToken)answer=`<article class="rec"><h3>Explanation</h3><p class="answer">${h(v.answer)}</p>${v.sources.map((s                                                     )=>`<details><summary>${h(s.path)} · lines ${s.start}–${s.end}</summary><pre>${h(s.excerpt)}</pre></details>`).join('')}</article>`}catch(err){if(token===aiToken)answer=`<p role="alert" class="notice">${h((err         ).message)}</p>`}finally{if(token===aiToken)aiBusy=false;render()}}
+ if(id==='explain'&&report&&explainApi&&!aiBusy){const token=++aiToken;aiBusy=true;answer='';render();try{const v=await request(explainApi+'/explain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:report.url,revision:report.head,path:selected,question})});if(token===aiToken)answer=`<article class="rec"><h3>Explanation</h3><p class="answer">${h(v.answer)}</p>${v.sources.map((s                                                     )=>`<details><summary>${h(s.path)} · lines ${s.start}–${s.end}</summary><pre>${h(s.excerpt)}</pre></details>`).join('')}</article>`}catch(err){if(token===aiToken)answer=`<p role="alert" class="notice">${h((err         ).message)}</p>`}finally{if(token===aiToken)aiBusy=false;render()}}
 });
 readLocation();
 render();
